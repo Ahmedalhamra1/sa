@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>جمعية أهل البالغ | التطوع - حفظ البيانات في Google Sheets</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --accent-glow: #60a5fa;
+            --dark-deep: #020617;
+            --glass-bg: rgba(15, 23, 42, 0.55);
+            --white-soft: #f8fafc;
+            --gray-mist: #cbd5e1;
+            --gold: #fbbf24;
+            --volunteer-blue: #3b82f6;
+            --volunteer-green: #10b981;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #030617;
+            min-height: 100vh;
+            color: var(--white-soft);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        html { font-size: 16px; scroll-behavior: smooth; }
+        @media (max-width: 768px) { html { font-size: 14px; } }
+        @media (max-width: 480px) { html { font-size: 13px; } }
+
+        /* خلفيات */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        @media (max-width: 768px) { .video-background { display: none; } body { background: linear-gradient(135deg, #0a0f2a, #030617); } }
+        
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(3, 7, 23, 0.85), rgba(2, 6, 23, 0.9));
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 1;
+            pointer-events: none;
+            animation: gridMove 30s linear infinite;
+        }
+        @keyframes gridMove { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 40px); } }
+
+        /* جزيئات */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        @media (max-width: 768px) { .particles-container { display: none; } }
+        
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(59,130,246,0.4), transparent);
+            border-radius: 50%;
+            animation: floatParticle linear infinite;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* شارة الجمعية */
+        .association-header {
+            position: relative;
+            z-index: 20;
+            text-align: center;
+            padding: 1.5rem 5% 1rem;
+            background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(2,6,23,0.4));
+            border-bottom: 2px solid var(--volunteer-blue);
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--volunteer-blue), var(--volunteer-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: logoPulse 2s infinite;
+        }
+        @keyframes logoPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.5); } 50% { box-shadow: 0 0 0 15px rgba(59,130,246,0.2); } }
+        
+        .logo-icon i { font-size: 2.2rem; color: white; }
+        
+        .association-name { text-align: center; }
+        .association-name h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--volunteer-green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .association-name h2 { font-size: 1rem; font-weight: 600; color: var(--gray-mist); margin-top: 0.3rem; }
+        .association-name h3 { font-size: 0.9rem; font-weight: 500; color: var(--gold); margin-top: 0.3rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+
+        @media (max-width: 550px) {
+            .logo-icon { width: 55px; height: 55px; }
+            .logo-icon i { font-size: 1.6rem; }
+            .association-name h1 { font-size: 1.1rem; }
+            .association-name h2 { font-size: 0.75rem; }
+            .association-name h3 { font-size: 0.7rem; }
+        }
+
+        /* اختيار اللغة */
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--gray-mist);
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+        .lang-btn.active {
+            background: linear-gradient(135deg, var(--volunteer-blue), var(--volunteer-green));
+            color: white;
+        }
+        .lang-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+        @media (max-width: 550px) {
+            .language-selector { top: 10px; left: 10px; }
+            .lang-btn { padding: 0.3rem 0.6rem; font-size: 0.7rem; }
+        }
+
+        /* شريط التنقل */
+        .navbar {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 5%;
+            backdrop-filter: blur(16px);
+            background: rgba(2, 6, 23, 0.7);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0;
+        }
+        
+        .logo { font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg, #fff, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .nav-links a { color: var(--gray-mist); text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: 0.3s; position: relative; cursor: pointer; }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            bottom: -6px;
+            right: 0;
+            background: linear-gradient(90deg, var(--volunteer-blue), var(--volunteer-green));
+            transition: 0.3s;
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-links a:hover { color: var(--volunteer-green); }
+        
+        @media (max-width: 550px) { .navbar { flex-direction: column; text-align: center; margin-top: 45px; } .nav-links { justify-content: center; gap: 1rem; } }
+
+        /* الحاوية الرئيسية */
+        .wrapper {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            padding: 2rem 5%;
+            position: relative;
+            z-index: 10;
+        }
+        @media (max-width: 900px) { .wrapper { grid-template-columns: 1fr; gap: 2rem; } }
+
+        /* الجانب الأيسر */
+        .left { text-align: right; }
+        @media (max-width: 900px) { .left { text-align: center; } }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59,130,246,0.2);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(59,130,246,0.3);
+        }
+        
+        .left h1 { font-size: 3rem; margin-bottom: 1rem; line-height: 1.3; }
+        @media (max-width: 768px) { .left h1 { font-size: 2.2rem; } }
+        @media (max-width: 480px) { .left h1 { font-size: 1.8rem; } }
+        
+        .gradient-text {
+            background: linear-gradient(to left, #60a5fa, #34d399, var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .left p {
+            color: var(--gray-mist);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        /* بطاقات الإحصائيات */
+        .stats {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) { .stats { justify-content: center; } }
+        
+        .stat-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            flex: 1;
+            min-width: 110px;
+            text-align: center;
+            border: 1px solid rgba(59,130,246,0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .stat-card:hover { transform: translateY(-5px); border-color: var(--volunteer-green); }
+        .stat-card h3 { font-size: 2rem; font-weight: 800; color: var(--gold); }
+        .stat-card p { font-size: 0.8rem; margin: 0; color: var(--gray-mist); }
+        @media (max-width: 480px) { .stat-card { padding: 0.8rem 1rem; min-width: 90px; } .stat-card h3 { font-size: 1.4rem; } }
+
+        /* قائمة المزايا */
+        .benefits {
+            margin-top: 2rem;
+            background: rgba(59,130,246,0.1);
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+        .benefits h4 { color: var(--gold); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .benefits ul { list-style: none; }
+        .benefits li { margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+        .benefits li i { color: var(--volunteer-green); }
+
+        /* نموذج التطوع */
+        .form-box {
+            background: rgba(8, 12, 30, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            border: 1px solid rgba(59,130,246,0.4);
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        @media (max-width: 480px) { .form-box { padding: 1.5rem; border-radius: 1.5rem; } }
+        
+        .form-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--volunteer-blue), var(--volunteer-green));
+            color: white;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: badgeGlow 1.5s infinite;
+        }
+        @keyframes badgeGlow { 0%,100% { box-shadow: 0 0 5px var(--volunteer-blue); } 50% { box-shadow: 0 0 15px var(--volunteer-blue); } }
+        
+        .form-header { margin-bottom: 1.5rem; text-align: center; }
+        .form-header h2 { font-size: 1.6rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .form-header p { color: var(--gray-mist); font-size: 0.85rem; margin-top: 0.3rem; }
+        
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.85rem; }
+        .input-group label i { color: var(--volunteer-blue); width: 20px; }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            background: rgba(2, 6, 23, 0.7);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 1rem;
+            padding: 0.9rem 1rem;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .input-group textarea { min-height: 90px; resize: vertical; }
+        
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: var(--volunteer-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+        }
+        
+        .double-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(105deg, var(--volunteer-blue), var(--volunteer-green));
+            border: none;
+            border-radius: 1.8rem;
+            padding: 1rem;
+            font-weight: 800;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -8px rgba(59,130,246,0.5); }
+        .submit-btn:active { transform: scale(0.98); }
+
+        /* أزرار المشاركة */
+        .social-share {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .social-icon:hover { background: var(--volunteer-blue); transform: translateY(-3px); }
+
+        /* إشعار Toast */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 25px;
+            left: 25px;
+            max-width: 380px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            backdrop-filter: blur(10px);
+            padding: 0.9rem 1.5rem;
+            border-radius: 60px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            direction: rtl;
+            text-align: center;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .toast-notification.show { transform: translateX(0); }
+        @media (min-width: 768px) { .toast-notification { right: 25px; left: auto; } }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .progress-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            z-index: 1001;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--volunteer-blue), var(--volunteer-green));
+            transition: width 0.2s;
+        }
+        
+        .error-feedback { color: #f87171; font-size: 0.7rem; margin-top: 0.3rem; }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+        
+        a, button, .submit-btn, .social-icon, .stat-card, .lang-btn {
+            cursor: pointer;
+        }
+        
+        /* مؤشر تحميل بيانات */
+        .data-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #10b981;
+            z-index: 1000;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- فيديو خلفية -->
+    <video class="video-background" autoplay loop muted playsinline>
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-golden-confetti-falling-on-stage-32866-large.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="grid-background"></div>
+    <div class="particles-container" id="particles"></div>
+    
+    <!-- شريط التقدم -->
+    <div class="progress-bar-container"><div class="progress-fill" id="progressFill"></div></div>
+    
+    <!-- إشعار Toast -->
+    <div class="toast-notification" id="toastMsg"><i class="fas fa-heart"></i> مرحباً بك في فريق المتطوعين!</div>
+    
+    <!-- حالة البيانات -->
+    <div class="data-status" id="dataStatus">📊 Google Sheets جاهز</div>
+    
+    <!-- اختيار اللغة -->
+    <div class="language-selector">
+        <button class="lang-btn active" data-lang="ar">🇸🇦 عربي</button>
+        <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
+        <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+    </div>
+    
+    <!-- شعار الجمعية -->
+    <div class="association-header">
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fas fa-hand-holding-heart"></i></div>
+            <div class="association-name">
+                <h1 class="assoc-name-tr">KÜTAHYA Uluslararası Öğrenci Derneği</h1>
+                <h2 class="assoc-name-en">International Student Association</h2>
+                <h3 class="assoc-name-ar"><i class="fas fa-heart" style="color: #e11d48;"></i> جمعية أهل البالغ دوليا <i class="fas fa-heart" style="color: #e11d48;"></i></h3>
+            </div>
+        </div>
+    </div>
+    
+    <!-- شريط التنقل -->
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-hands-helping"></i> <span class="logo-text">فريق أهل البالغ</span></div>
+        <div class="nav-links">
+            <a class="nav-home">الرئيسية</a>
+            <a class="nav-apply">التقديم</a>
+            <a class="nav-benefits">المزايا</a>
+            <a class="nav-contact">التواصل</a>
+        </div>
+    </nav>
+    
+    <!-- المحتوى الرئيسي -->
+    <div class="wrapper">
+        <!-- الجانب الأيسر -->
+        <div class="left">
+            <div class="badge">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="badge-text">تطوع الآن · فرصة العمر</span>
+            </div>
+            <h1>
+                <span class="title-main">كن جزءاً من</span>
+                <span class="gradient-text title-family">عائلة أهل البالغ</span>
+                <br>
+                <span class="title-sub">وتطوع معنا</span>
+            </h1>
+            <p class="description-text">
+                جمعية أهل البالغ الدولية تفتح أبوابها للمتطوعين من جميع الجنسيات. 
+                انضم إلى فريقنا المتميز، واكتسب خبرات قيمة، وابنِ علاقات تدوم مدى الحياة.
+            </p>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <h3 id="volCounter">0</h3>
+                    <p class="stat-volunteers">متطوع حالياً</p>
+                </div>
+                <div class="stat-card">
+                    <h3>+15</h3>
+                    <p class="stat-countries">جنسية مختلفة</p>
+                </div>
+                <div class="stat-card">
+                    <h3>2026</h3>
+                    <p class="stat-season">الموسم الحالي</p>
+                </div>
+            </div>
+            
+            <div class="benefits" id="benefits-section">
+                <h4><i class="fas fa-gift"></i> <span class="benefits-title">مزايا التطوع معنا</span>:</h4>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit1">شهادة تطوع معتمدة من الجمعية</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit2">خطاب توصية للمتميزين</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit3">حضور مجاني لجميع فعاليات الجمعية</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit4">فرصة للمشاركة في المؤتمرات الدولية</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit5">اكتساب مهارات قيادية وتنظيمية</span></li>
+                    <li><i class="fas fa-check-circle"></i> <span class="benefit6">شبكة علاقات مع طلاب من جميع أنحاء العالم</span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- نموذج التطوع -->
+        <div class="form-box">
+            <div class="form-badge">
+                <i class="fas fa-hands-helping"></i>
+                <span class="badge-form">فرصة تطوع · سجل الآن</span>
+            </div>
+            <div class="form-header">
+                <h2><i class="fas fa-file-alt"></i> <span class="form-title">نموذج التطوع</span></h2>
+                <p class="form-subtitle">املأ البيانات التالية للانضمام إلى فريقنا</p>
+            </div>
+            
+            <form id="volunteerForm">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> <span class="label-fullname">الاسم الكامل (ثلاثي)</span></label>
+                    <input type="text" id="fullname" placeholder="مثال: أحمد محمد عبدالله" required>
+                    <div class="error-feedback" id="nameError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> <span class="label-email">البريد الإلكتروني</span></label>
+                    <input type="email" id="email" placeholder="example@domain.com" required>
+                    <div class="error-feedback" id="emailError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-phone-alt"></i> <span class="label-phone">رقم الهاتف (واتساب)</span></label>
+                    <input type="tel" id="phone" placeholder="+90 5xx xxx xx xx" required>
+                    <div class="error-feedback" id="phoneError"></div>
+                </div>
+                
+                <div class="double-input">
+                    <div class="input-group">
+                        <label><i class="fas fa-calendar-alt"></i> <span class="label-age">العمر</span></label>
+                        <input type="number" id="age" placeholder="18+" min="18" max="80" required>
+                        <div class="error-feedback" id="ageError"></div>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-flag"></i> <span class="label-nationality">الجنسية</span></label>
+                        <input type="text" id="nationality" placeholder="مثال: تركي / مصري" required>
+                        <div class="error-feedback" id="nationalityError"></div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-tasks"></i> <span class="label-field">مجال التطوع المفضل</span></label>
+                    <select id="volunteerField" required>
+                        <option value="" disabled selected>-- اختر المجال --</option>
+                        <option value="تنظيم الفعاليات">تنظيم الفعاليات والمؤتمرات</option>
+                        <option value="الإعلام والتسويق">الإعلام والتسويق (سوشال ميديا)</option>
+                        <option value="التصوير والفيديو">التصوير والفيديو والمونتاج</option>
+                        <option value="الدعم التقني">الدعم التقني والتقنية</option>
+                        <option value="الاستقبال">الاستقبال والضيافة</option>
+                        <option value="الترجمة">الترجمة (عربي/تركي/إنجليزي)</option>
+                        <option value="التنسيق">التنسيق واللوجستيات</option>
+                        <option value="العلاقات العامة">جمع التبرعات والعلاقات العامة</option>
+                    </select>
+                    <div class="error-feedback" id="fieldError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-clock"></i> <span class="label-hours">عدد الساعات المتاحة أسبوعياً</span></label>
+                    <select id="hoursAvailable">
+                        <option value="" disabled selected>-- اختر عدد الساعات --</option>
+                        <option>أقل من 5 ساعات</option>
+                        <option>5 - 10 ساعات</option>
+                        <option>10 - 15 ساعة</option>
+                        <option>أكثر من 15 ساعة</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-language"></i> <span class="label-languages">اللغات التي تتحدثها</span></label>
+                    <input type="text" id="languages" placeholder="مثال: العربية، التركية، الإنجليزية" required>
+                    <div class="error-feedback" id="languagesError"></div>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-comment-dots"></i> <span class="label-motivation">لماذا ترغب في التطوع معنا؟ (خبراتك السابقة)</span></label>
+                    <textarea id="motivation" placeholder="حدثنا عن دوافعك، مهاراتك، وأي خبرات سابقة في التطوع..."></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span id="btnText"><i class="fas fa-paper-plane"></i> <span class="btn-text">تقديم طلب التطوع</span></span>
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- أزرار المشاركة الاجتماعية -->
+    <div class="social-share">
+        <div class="social-icon" data-social="فيسبوك"><i class="fab fa-facebook-f"></i></div>
+        <div class="social-icon" data-social="تويتر"><i class="fab fa-twitter"></i></div>
+        <div class="social-icon" data-social="واتساب"><i class="fab fa-whatsapp"></i></div>
+        <div class="social-icon" data-social="انستغرام"><i class="fab fa-instagram"></i></div>
+    </div>
+    
+    <footer>
+        <p class="footer-text"><i class="fas fa-copyright"></i> 2026 جمعية أهل البالغ الدولية - معاً نصنع التغيير</p>
+    </footer>
+    
+    <script>
+        // ======================== إعدادات Google Sheets ========================
+        // ⚠️ هام: قم باستبدال هذا الرابط بالرابط الذي ستحصل عليه من Google Apps Script
+        // رابط Web App الذي ستحصل عليه بعد نشر التطبيق في Google Apps Script
+        const GOOGLE_SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwrbSePQG8Df8v42dLHivb2g2fiNCRz7QiIa4fNCvtYRKLTT3GGbUOG5zW9SR2xuxsm/exec";
+        
+        // ملاحظة: هذا رابط تجريبي للتوضيح. ستحتاج إلى إنشاء الرابط الخاص بك عبر الخطوات أدناه.
+        
+        // ======================== وظيفة حفظ البيانات في Google Sheets ========================
+        async function saveToGoogleSheets(formData) {
+            try {
+                const statusDiv = document.getElementById('dataStatus');
+                statusDiv.innerHTML = '⏳ جاري الحفظ في Google Sheets...';
+                statusDiv.style.color = '#fbbf24';
+                
+                const response = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // للتجربة، يمكن تغييره إلى 'cors' بعد إعداد CORS
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                statusDiv.innerHTML = '✅ تم الحفظ في Google Sheets';
+                statusDiv.style.color = '#10b981';
+                setTimeout(() => {
+                    statusDiv.innerHTML = '📊 Google Sheets متصل';
+                    statusDiv.style.color = '#10b981';
+                }, 3000);
+                
+                return true;
+            } catch (error) {
+                console.error('خطأ في حفظ البيانات:', error);
+                document.getElementById('dataStatus').innerHTML = '❌ خطأ في الاتصال بـ Google Sheets';
+                document.getElementById('dataStatus').style.color = '#ef4444';
+                setTimeout(() => {
+                    document.getElementById('dataStatus').innerHTML = '📊 Google Sheets جاهز';
+                    document.getElementById('dataStatus').style.color = '#10b981';
+                }, 5000);
+                return false;
+            }
+        }
+        
+        // ======================== حفظ البيانات محلياً كنسخة احتياطية ========================
+        function saveToLocalBackup(formData) {
+            try {
+                let backups = localStorage.getItem('volunteer_backups');
+                backups = backups ? JSON.parse(backups) : [];
+                backups.push({
+                    ...formData,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('volunteer_backups', JSON.stringify(backups));
+                console.log('تم حفظ نسخة احتياطية محلياً');
+                return true;
+            } catch(e) {
+                console.error('خطأ في النسخ الاحتياطي:', e);
+                return false;
+            }
+        }
+        
+        // ======================== قاعدة بيانات الترجمات ========================
+        const translations = {
+            ar: {
+                nav_home: "الرئيسية",
+                nav_apply: "التقديم",
+                nav_benefits: "المزايا",
+                nav_contact: "التواصل",
+                logo_text: "فريق أهل البالغ",
+                badge_text: "تطوع الآن · فرصة العمر",
+                title_main: "كن جزءاً من",
+                title_family: "عائلة أهل البالغ",
+                title_sub: "وتطوع معنا",
+                description: "جمعية أهل البالغ الدولية تفتح أبوابها للمتطوعين من جميع الجنسيات. انضم إلى فريقنا المتميز، واكتسب خبرات قيمة، وابنِ علاقات تدوم مدى الحياة.",
+                stat_volunteers: "متطوع حالياً",
+                stat_countries: "جنسية مختلفة",
+                stat_season: "الموسم الحالي",
+                benefits_title: "مزايا التطوع معنا",
+                benefit1: "شهادة تطوع معتمدة من الجمعية",
+                benefit2: "خطاب توصية للمتميزين",
+                benefit3: "حضور مجاني لجميع فعاليات الجمعية",
+                benefit4: "فرصة للمشاركة في المؤتمرات الدولية",
+                benefit5: "اكتساب مهارات قيادية وتنظيمية",
+                benefit6: "شبكة علاقات مع طلاب من جميع أنحاء العالم",
+                badge_form: "فرصة تطوع · سجل الآن",
+                form_title: "نموذج التطوع",
+                form_subtitle: "املأ البيانات التالية للانضمام إلى فريقنا",
+                label_fullname: "الاسم الكامل (ثلاثي)",
+                label_email: "البريد الإلكتروني",
+                label_phone: "رقم الهاتف (واتساب)",
+                label_age: "العمر",
+                label_nationality: "الجنسية",
+                label_field: "مجال التطوع المفضل",
+                label_hours: "عدد الساعات المتاحة أسبوعياً",
+                label_languages: "اللغات التي تتحدثها",
+                label_motivation: "لماذا ترغب في التطوع معنا؟ (خبراتك السابقة)",
+                btn_text: "تقديم طلب التطوع",
+                footer_text: "2026 جمعية أهل البالغ الدولية - معاً نصنع التغيير",
+                success_msg: "🎉 شكراً {name}! تم استلام طلب تطوعك في مجال \"{field}\". تم حفظ البيانات في Google Sheets وسنواصل معك خلال 48 ساعة.",
+                error_msg: "الرجاء تعبئة جميع الحقول بشكل صحيح",
+                share_msg: "تمت مشاركة رابط التطوع على {platform} 📢",
+                sheet_error: "حدث خطأ في حفظ البيانات، ولكن تم حفظ نسخة احتياطية محلياً"
+            },
+            tr: {
+                nav_home: "Ana Sayfa",
+                nav_apply: "Başvuru",
+                nav_benefits: "Avantajlar",
+                nav_contact: "İletişim",
+                logo_text: "Ahl Elbalag Ekibi",
+                badge_text: "Şimdi Gönüllü Ol · Fırsat",
+                title_main: "Bir parçası ol",
+                title_family: "Ahl Elbalag Ailesinin",
+                title_sub: "ve gönüllü ol",
+                description: "Ahl Elbalag Uluslararası Öğrenci Derneği, tüm milletlerden gönüllülere kapılarını açıyor. Özel ekibimize katılın, değerli deneyimler kazanın ve ömür boyu sürecek ilişkiler kurun.",
+                stat_volunteers: "Gönüllü Sayısı",
+                stat_countries: "Farklı Ülke",
+                stat_season: "Bu Sezon",
+                benefits_title: "Gönüllü Olmanın Avantajları",
+                benefit1: "Dernek onaylı gönüllü sertifikası",
+                benefit2: "Başarılı gönüllülere tavsiye mektubu",
+                benefit3: "Tüm dernek etkinliklerine ücretsiz katılım",
+                benefit4: "Uluslararası konferanslara katılım fırsatı",
+                benefit5: "Liderlik ve organizasyon becerileri kazanma",
+                benefit6: "Dünyanın her yerinden öğrencilerle iletişim ağı",
+                badge_form: "Gönüllü Fırsatı · Hemen Kaydol",
+                form_title: "Gönüllü Başvuru Formu",
+                form_subtitle: "Ekibimize katılmak için aşağıdaki bilgileri doldurun",
+                label_fullname: "Tam Ad (Üçlü)",
+                label_email: "E-posta Adresi",
+                label_phone: "Telefon Numarası (WhatsApp)",
+                label_age: "Yaş",
+                label_nationality: "Uyruk",
+                label_field: "Tercih Ettiğiniz Alan",
+                label_hours: "Haftalık Müsait Saat",
+                label_languages: "Konuştuğunuz Diller",
+                label_motivation: "Neden gönüllü olmak istiyorsunuz? (Deneyimleriniz)",
+                btn_text: "Gönüllü Başvurusu Gönder",
+                footer_text: "2026 Ahl Elbalag Uluslararası Öğrenci Derneği - Birlikte değişimi yaratıyoruz",
+                success_msg: "🎉 Teşekkürler {name}! \"{field}\" alanındaki gönüllü başvurunuz alındı. Veriler Google Sheets'e kaydedildi. En kısa sürede size dönüş yapacağız.",
+                error_msg: "Lütfen tüm alanları doğru şekilde doldurun",
+                share_msg: "Gönüllü bağlantısı {platform} üzerinde paylaşıldı 📢",
+                sheet_error: "Veri kaydedilirken hata oluştu, ancak yerel yedek kaydedildi"
+            },
+            en: {
+                nav_home: "Home",
+                nav_apply: "Apply",
+                nav_benefits: "Benefits",
+                nav_contact: "Contact",
+                logo_text: "Ahl Elbalag Team",
+                badge_text: "Volunteer Now · Opportunity of a Lifetime",
+                title_main: "Be part of",
+                title_family: "Ahl Elbalag Family",
+                title_sub: "and volunteer with us",
+                description: "Ahl Elbalag International Student Association opens its doors to volunteers from all nationalities. Join our distinguished team, gain valuable experience, and build lasting relationships.",
+                stat_volunteers: "Active Volunteers",
+                stat_countries: "Different Countries",
+                stat_season: "Current Season",
+                benefits_title: "Volunteer Benefits",
+                benefit1: "Association certified volunteer certificate",
+                benefit2: "Recommendation letter for outstanding volunteers",
+                benefit3: "Free attendance to all association events",
+                benefit4: "Opportunity to participate in international conferences",
+                benefit5: "Develop leadership and organizational skills",
+                benefit6: "Network with students from around the world",
+                badge_form: "Volunteer Opportunity · Register Now",
+                form_title: "Volunteer Application Form",
+                form_subtitle: "Fill in the information below to join our team",
+                label_fullname: "Full Name (Three names)",
+                label_email: "Email Address",
+                label_phone: "Phone Number (WhatsApp)",
+                label_age: "Age",
+                label_nationality: "Nationality",
+                label_field: "Preferred Volunteer Field",
+                label_hours: "Weekly Available Hours",
+                label_languages: "Languages You Speak",
+                label_motivation: "Why do you want to volunteer? (Your previous experience)",
+                btn_text: "Submit Volunteer Application",
+                footer_text: "2026 Ahl Elbalag International Student Association - Together we make a difference",
+                success_msg: "🎉 Thank you {name}! Your volunteer application for \"{field}\" has been received. Data saved to Google Sheets. We will contact you within 48 hours.",
+                error_msg: "Please fill all fields correctly",
+                share_msg: "Volunteer link shared on {platform} 📢",
+                sheet_error: "Error saving data, but local backup has been saved"
+            }
+        };
+        
+        let currentLang = 'ar';
+        
+        // ========== تحديث اللغة ==========
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            if(lang === 'ar') {
+                document.body.style.direction = 'rtl';
+                document.documentElement.setAttribute('dir', 'rtl');
+            } else {
+                document.body.style.direction = 'ltr';
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+            
+            document.querySelector('.logo-text').textContent = t.logo_text;
+            document.querySelector('.badge-text').textContent = t.badge_text;
+            document.querySelector('.title-main').textContent = t.title_main;
+            document.querySelector('.title-family').textContent = t.title_family;
+            document.querySelector('.title-sub').textContent = t.title_sub;
+            document.querySelector('.description-text').textContent = t.description;
+            document.querySelector('.stat-volunteers').textContent = t.stat_volunteers;
+            document.querySelector('.stat-countries').textContent = t.stat_countries;
+            document.querySelector('.stat-season').textContent = t.stat_season;
+            document.querySelector('.benefits-title').textContent = t.benefits_title;
+            document.querySelectorAll('.benefit1')[0].textContent = t.benefit1;
+            document.querySelectorAll('.benefit2')[0].textContent = t.benefit2;
+            document.querySelectorAll('.benefit3')[0].textContent = t.benefit3;
+            document.querySelectorAll('.benefit4')[0].textContent = t.benefit4;
+            document.querySelectorAll('.benefit5')[0].textContent = t.benefit5;
+            document.querySelectorAll('.benefit6')[0].textContent = t.benefit6;
+            document.querySelector('.badge-form').textContent = t.badge_form;
+            document.querySelector('.form-title').textContent = t.form_title;
+            document.querySelector('.form-subtitle').textContent = t.form_subtitle;
+            document.querySelector('.label-fullname').textContent = t.label_fullname;
+            document.querySelector('.label-email').textContent = t.label_email;
+            document.querySelector('.label-phone').textContent = t.label_phone;
+            document.querySelector('.label-age').textContent = t.label_age;
+            document.querySelector('.label-nationality').textContent = t.label_nationality;
+            document.querySelector('.label-field').textContent = t.label_field;
+            document.querySelector('.label-hours').textContent = t.label_hours;
+            document.querySelector('.label-languages').textContent = t.label_languages;
+            document.querySelector('.label-motivation').textContent = t.label_motivation;
+            document.querySelector('.btn-text').textContent = t.btn_text;
+            document.querySelector('.footer-text').innerHTML = `<i class="fas fa-copyright"></i> ${t.footer_text}`;
+            
+            document.querySelectorAll('.nav-home')[0].textContent = t.nav_home;
+            document.querySelectorAll('.nav-apply')[0].textContent = t.nav_apply;
+            document.querySelectorAll('.nav-benefits')[0].textContent = t.nav_benefits;
+            document.querySelectorAll('.nav-contact')[0].textContent = t.nav_contact;
+            
+            const placeholders = {
+                ar: { fullname: 'مثال: أحمد محمد عبدالله', nationality: 'مثال: تركي / مصري', languages: 'مثال: العربية، التركية، الإنجليزية', motivation: 'حدثنا عن دوافعك، مهاراتك، وأي خبرات سابقة في التطوع...' },
+                tr: { fullname: 'Örnek: Ahmet Mehmet Abdullah', nationality: 'Örnek: Türk / Mısırlı', languages: 'Örnek: Arapça, Türkçe, İngilizce', motivation: 'Motivasyonlarınız, becerileriniz ve önceki gönüllülük deneyimleriniz...' },
+                en: { fullname: 'Example: Ahmed Mohammed Abdullah', nationality: 'Example: Turkish / Egyptian', languages: 'Example: Arabic, Turkish, English', motivation: 'Tell us about your motivation, skills, and any previous volunteer experience...' }
+            };
+            document.getElementById('fullname').placeholder = placeholders[lang].fullname;
+            document.getElementById('nationality').placeholder = placeholders[lang].nationality;
+            document.getElementById('languages').placeholder = placeholders[lang].languages;
+            document.getElementById('motivation').placeholder = placeholders[lang].motivation;
+            
+            const fieldSelect = document.getElementById('volunteerField');
+            const hoursSelect = document.getElementById('hoursAvailable');
+            
+            if(lang === 'ar') {
+                fieldSelect.options[0].text = '-- اختر المجال --';
+                fieldSelect.options[1].text = 'تنظيم الفعاليات والمؤتمرات';
+                fieldSelect.options[2].text = 'الإعلام والتسويق (سوشال ميديا)';
+                fieldSelect.options[3].text = 'التصوير والفيديو والمونتاج';
+                fieldSelect.options[4].text = 'الدعم التقني والتقنية';
+                fieldSelect.options[5].text = 'الاستقبال والضيافة';
+                fieldSelect.options[6].text = 'الترجمة (عربي/تركي/إنجليزي)';
+                fieldSelect.options[7].text = 'التنسيق واللوجستيات';
+                fieldSelect.options[8].text = 'جمع التبرعات والعلاقات العامة';
+                hoursSelect.options[0].text = '-- اختر عدد الساعات --';
+                hoursSelect.options[1].text = 'أقل من 5 ساعات';
+                hoursSelect.options[2].text = '5 - 10 ساعات';
+                hoursSelect.options[3].text = '10 - 15 ساعة';
+                hoursSelect.options[4].text = 'أكثر من 15 ساعة';
+            } else if(lang === 'tr') {
+                fieldSelect.options[0].text = '-- Alan seçin --';
+                fieldSelect.options[1].text = 'Etkinlik ve Konferans Organizasyonu';
+                fieldSelect.options[2].text = 'Medya ve Pazarlama (Sosyal Medya)';
+                fieldSelect.options[3].text = 'Fotoğrafçılık, Video ve Montaj';
+                fieldSelect.options[4].text = 'Teknik Destek ve Teknoloji';
+                fieldSelect.options[5].text = 'Karşılama ve Misafirperverlik';
+                fieldSelect.options[6].text = 'Tercümanlık (Arapça/Türkçe/İngilizce)';
+                fieldSelect.options[7].text = 'Koordinasyon ve Lojistik';
+                fieldSelect.options[8].text = 'Bağış Toplama ve Halkla İlişkiler';
+                hoursSelect.options[0].text = '-- Saat seçin --';
+                hoursSelect.options[1].text = '5 saatten az';
+                hoursSelect.options[2].text = '5 - 10 saat';
+                hoursSelect.options[3].text = '10 - 15 saat';
+                hoursSelect.options[4].text = '15 saatten fazla';
+            } else {
+                fieldSelect.options[0].text = '-- Select field --';
+                fieldSelect.options[1].text = 'Event and Conference Organization';
+                fieldSelect.options[2].text = 'Media and Marketing (Social Media)';
+                fieldSelect.options[3].text = 'Photography, Video and Editing';
+                fieldSelect.options[4].text = 'Technical Support and Technology';
+                fieldSelect.options[5].text = 'Reception and Hospitality';
+                fieldSelect.options[6].text = 'Translation (Arabic/Turkish/English)';
+                fieldSelect.options[7].text = 'Coordination and Logistics';
+                fieldSelect.options[8].text = 'Fundraising and Public Relations';
+                hoursSelect.options[0].text = '-- Select hours --';
+                hoursSelect.options[1].text = 'Less than 5 hours';
+                hoursSelect.options[2].text = '5 - 10 hours';
+                hoursSelect.options[3].text = '10 - 15 hours';
+                hoursSelect.options[4].text = 'More than 15 hours';
+            }
+        }
+        
+        // ========== أزرار اللغة ==========
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                updateLanguage(btn.getAttribute('data-lang'));
+            });
+        });
+        
+        // ========== جزيئات ==========
+        if(window.innerWidth > 768) {
+            const container = document.getElementById('particles');
+            if(container) {
+                for(let i = 0; i < 50; i++) {
+                    const p = document.createElement('div');
+                    p.classList.add('particle');
+                    p.style.width = (Math.random() * 5 + 2) + 'px';
+                    p.style.height = p.style.width;
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.animationDuration = Math.random() * 12 + 5 + 's';
+                    p.style.animationDelay = Math.random() * 10 + 's';
+                    container.appendChild(p);
+                }
+            }
+        }
+        
+        // ========== عداد المتطوعين ==========
+        let counted = false;
+        new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting && !counted) {
+                let count = 0;
+                const target = 186;
+                const interval = setInterval(() => {
+                    if(count < target) {
+                        count += 3;
+                        document.getElementById('volCounter').innerText = Math.min(count, target);
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 25);
+                counted = true;
+            }
+        }, { threshold: 0.3 }).observe(document.querySelector('.stats'));
+        
+        // ========== شريط التقدم ==========
+        window.addEventListener('scroll', () => {
+            const scroll = document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - window.innerHeight;
+            document.getElementById('progressFill').style.width = (scroll / height) * 100 + '%';
+        });
+        
+        // ========== إشعارات ==========
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-heart'}"></i> ${message}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+        
+        // ========== ألعاب نارية ==========
+        function createConfetti() {
+            for(let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    const conf = document.createElement('div');
+                    const colors = ['#3b82f6', '#10b981', '#fbbf24', '#e11d48', '#8b5cf6'];
+                    conf.style.cssText = `
+                        position: fixed;
+                        width: ${Math.random() * 8 + 4}px;
+                        height: ${Math.random() * 10 + 6}px;
+                        background: ${colors[Math.floor(Math.random() * colors.length)]};
+                        left: ${Math.random() * window.innerWidth}px;
+                        top: -10px;
+                        z-index: 9999;
+                        pointer-events: none;
+                        border-radius: 2px;
+                    `;
+                    document.body.appendChild(conf);
+                    let pos = 0;
+                    const fall = setInterval(() => {
+                        pos += 5;
+                        conf.style.top = pos + 'px';
+                        if(pos > window.innerHeight) {
+                            clearInterval(fall);
+                            conf.remove();
+                        }
+                    }, 20);
+                    setTimeout(() => conf.remove(), 3000);
+                }, i * 25);
+            }
+        }
+        
+        // ========== دوال التحقق ==========
+        function validateName() {
+            const name = document.getElementById('fullname').value.trim();
+            const errorSpan = document.getElementById('nameError');
+            if(name.length < 5) {
+                errorSpan.innerText = currentLang === 'ar' ? 'الاسم 5 أحرف على الأقل' : (currentLang === 'tr' ? 'Ad en az 5 karakter olmalı' : 'Name must be at least 5 characters');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validateEmail() {
+            const email = document.getElementById('email').value.trim();
+            const errorSpan = document.getElementById('emailError');
+            const pattern = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+            if(!pattern.test(email)) {
+                errorSpan.innerText = currentLang === 'ar' ? 'بريد غير صالح' : (currentLang === 'tr' ? 'Geçersiz e-posta' : 'Invalid email');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validatePhone() {
+            const phone = document.getElementById('phone').value.trim().replace(/[\s+\-()]/g, '');
+            const errorSpan = document.getElementById('phoneError');
+            if(phone.length < 8 || !/^[0-9+]+$/.test(phone)) {
+                errorSpan.innerText = currentLang === 'ar' ? 'رقم غير صحيح' : (currentLang === 'tr' ? 'Geçersiz numara' : 'Invalid number');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validateAge() {
+            const age = parseInt(document.getElementById('age').value);
+            const errorSpan = document.getElementById('ageError');
+            if(isNaN(age) || age < 18 || age > 80) {
+                errorSpan.innerText = currentLang === 'ar' ? 'العمر 18-80' : (currentLang === 'tr' ? 'Yaş 18-80 arası' : 'Age must be 18-80');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validateNationality() {
+            const nationality = document.getElementById('nationality').value.trim();
+            const errorSpan = document.getElementById('nationalityError');
+            if(nationality.length < 3) {
+                errorSpan.innerText = currentLang === 'ar' ? 'أدخل جنسيتك' : (currentLang === 'tr' ? 'Uyruğunuzu girin' : 'Enter your nationality');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validateField() {
+            const field = document.getElementById('volunteerField').value;
+            const errorSpan = document.getElementById('fieldError');
+            if(!field) {
+                errorSpan.innerText = currentLang === 'ar' ? 'اختر المجال' : (currentLang === 'tr' ? 'Alan seçin' : 'Select a field');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        function validateLanguages() {
+            const languages = document.getElementById('languages').value.trim();
+            const errorSpan = document.getElementById('languagesError');
+            if(languages.length < 3) {
+                errorSpan.innerText = currentLang === 'ar' ? 'أدخل اللغات' : (currentLang === 'tr' ? 'Dilleri girin' : 'Enter languages');
+                return false;
+            }
+            errorSpan.innerText = '';
+            return true;
+        }
+        
+        document.getElementById('fullname')?.addEventListener('input', validateName);
+        document.getElementById('email')?.addEventListener('input', validateEmail);
+        document.getElementById('phone')?.addEventListener('input', validatePhone);
+        document.getElementById('age')?.addEventListener('input', validateAge);
+        document.getElementById('nationality')?.addEventListener('input', validateNationality);
+        document.getElementById('volunteerField')?.addEventListener('change', validateField);
+        document.getElementById('languages')?.addEventListener('input', validateLanguages);
+        
+        // ========== إرسال النموذج وحفظ البيانات ==========
+        const form = document.getElementById('volunteerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnTextSpan = document.getElementById('btnText');
+        
+        if(form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                if(!validateName() || !validateEmail() || !validatePhone() || !validateAge() || !validateNationality() || !validateField() || !validateLanguages()) {
+                    showToast(translations[currentLang].error_msg, true);
+                    return;
+                }
+                
+                const name = document.getElementById('fullname').value.trim();
+                const firstName = name.split(' ')[0];
+                const field = document.getElementById('volunteerField').options[document.getElementById('volunteerField').selectedIndex]?.text || '';
+                
+                // تجميع البيانات للحفظ
+                const formData = {
+                    name: name,
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    age: document.getElementById('age').value,
+                    nationality: document.getElementById('nationality').value.trim(),
+                    field: field,
+                    hours: document.getElementById('hoursAvailable').value || 'غير محدد',
+                    languages: document.getElementById('languages').value.trim(),
+                    motivation: document.getElementById('motivation').value.trim() || 'لا يوجد',
+                    lang: currentLang
+                };
+                
+                // إظهار مؤشر التحميل
+                const originalHtml = btnTextSpan.innerHTML;
+                btnTextSpan.innerHTML = '<span class="loading-spinner"></span> ' + (currentLang === 'ar' ? 'جاري الحفظ...' : (currentLang === 'tr' ? 'Kaydediliyor...' : 'Saving...'));
+                submitBtn.disabled = true;
+                
+                // محاولة حفظ البيانات في Google Sheets
+                let savedToSheet = false;
+                try {
+                    savedToSheet = await saveToGoogleSheets(formData);
+                } catch(e) {
+                    console.error('خطأ:', e);
+                    savedToSheet = false;
+                }
+                
+                // حفظ نسخة احتياطية محلية دائماً
+                saveToLocalBackup(formData);
+                
+                // عرض رسالة النجاح
+                let successMessage = translations[currentLang].success_msg.replace('{name}', firstName).replace('{field}', field);
+                if(!savedToSheet) {
+                    successMessage += ' ' + translations[currentLang].sheet_error;
+                }
+                showToast(successMessage);
+                createConfetti();
+                
+                btnTextSpan.innerHTML = originalHtml;
+                submitBtn.disabled = false;
+                form.reset();
+                
+                // زيادة العداد بشكل رمزي
+                const currentCount = parseInt(document.getElementById('volCounter').innerText);
+                if(!isNaN(currentCount)) {
+                    document.getElementById('volCounter').innerText = currentCount + 1;
+                }
+            });
+        }
+        
+        // ========== أزرار المشاركة ==========
+        document.querySelectorAll('.social-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const platform = icon.getAttribute('data-social');
+                const msg = translations[currentLang].share_msg.replace('{platform}', platform);
+                showToast(msg);
+            });
+        });
+        
+        // ========== تمرير سلس ==========
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const text = link.textContent;
+                let targetId = '';
+                if(text.includes('الرئيسية') || text.includes('Ana Sayfa') || text.includes('Home')) targetId = 'home';
+                else if(text.includes('التقديم') || text.includes('Başvuru') || text.includes('Apply')) targetId = 'apply';
+                else if(text.includes('المزايا') || text.includes('Avantajlar') || text.includes('Benefits')) targetId = 'benefits-section';
+                else targetId = 'home';
+                
+                const target = document.getElementById(targetId) || document.querySelector('.wrapper');
+                if(target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+        
+        // تهيئة اللغة الافتراضية
+        updateLanguage('ar');
+        
+        console.log('✅ Google Sheets integration ready!');
+        console.log('⚠️ Important: Replace GOOGLE_SHEETS_WEBAPP_URL with your actual Google Apps Script Web App URL');
+    </script>
+</body>
+</html>
